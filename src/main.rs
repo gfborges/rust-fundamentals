@@ -13,7 +13,13 @@ fn main() {
             .read_line(&mut guess)
             .expect("failed to read =(");
         
-        let guess: u32 = guess.trim().parse().expect("please enter a integer");
+        let guess: u32 = match guess.trim().parse() {
+            Ok(num) => num,
+            Err(_) => {
+                println!("please enter a positive integer");
+                continue;
+            }
+        };
     
         match guess.cmp(&secret_number) {
             Ordering::Greater => println!("ᵗᵒᵒ ᵐᵘᶜʰ"),

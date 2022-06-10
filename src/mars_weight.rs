@@ -1,7 +1,6 @@
 use std::io::{self, Write};
 use regex::Regex;
 
-
 fn main() {
     print!("enter your weight on earth: ");
     io::stdout().flush().unwrap();
@@ -12,31 +11,36 @@ fn main() {
         .expect("Falied to read_line");
     let weight = weight.trim();
 
-    let weight = parse_weight(weight);
+    let weight = parse_weight(weight)
+        .expect("Invalid input");
 
-    println!("your weight on earth is {}kg", weight);
-    println!("your weight on mars is {}kg", calc_mars_weight(weight));
+    println!("your weight on earth is {:.3}kg", weight);
+    println!("your weight on mars is {:.3}kg", calc_mars_weight(weight));
 }
 
-fn parse_weight(weight: &str) -> f32 {
+fn parse_weight(weight: &str) -> Option<f32> {
     let value_re: Regex = Regex::new(r"^(\d+\.?\d+)$").unwrap();
     let kg_re: Regex = Regex::new(r"^(\d+\.?\d+)kg$").unwrap();
+    let dg_re: Regex = Regex::new(r"^(\d+\.?\d+)dg$").unwrap();
     let g_re: Regex = Regex::new(r"^(\d+\.?\d+)g$").unwrap();
 
-    if kg_re.is_match(weight) {
-        parse_unit(kg_re, weight)
-    } else if g_re.is_match(weight) {
-        parse_unit(g_re, weight) / 1000.0
+    if let Some(captures) = kg_re.captures(weight) {
+        Option::Some(parse_unit(captures))
+    } else if let Some(captures) = dg_re.captures(weight) {
+        Option::Some(parse_unit(captures) / 100.0)
+    } else if let Some(captures) = g_re.captures(weight) {
+        Option::Some(parse_unit(captures) / 1000.0)
+    } else if let Some(captures) = value_re.captures(weight){
+        Option::Some(parse_unit(captures))
     } else {
-        parse_unit(value_re, weight)
-    }
+        Option::None
+    } 
 }
 
-fn parse_unit(unit_re: Regex, weight: &str) -> f32 {
-    unit_re.captures(weight)
-    .unwrap()
+fn parse_unit(captures: regex::Captures) -> f32 {
+    captures
     .get(1)
-    .unwrap()
+    .expect("Falied t")
     .as_str()
     .parse()
     .expect("Falied to parse weight")

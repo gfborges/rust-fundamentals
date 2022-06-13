@@ -1,3 +1,4 @@
+mod restaurant;
 fn main() {
-    println!("Hello, world!");   
+    restaurant::enter();
 }

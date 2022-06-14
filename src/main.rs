@@ -2,6 +2,7 @@
 use server::Server;
 mod restaurant;
 mod server;
+mod http;
 
 fn main() {
     restaurant::enter();

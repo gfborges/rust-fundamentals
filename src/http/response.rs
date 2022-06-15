@@ -33,14 +33,14 @@ pub struct Response {
 }
 
 impl Response {
-    pub fn new(status_code: StatusCode) -> Self {
+    pub fn new(status_code: StatusCode, body: Option<String>) -> Self {
         Self {
             status_code: StatusCode::Ok,
-            body: Some(String::from("<html><body>Hello World</body></html>")),
+            body,
         }
     }
 
-    pub fn send(&self, mut stream: Box::<dyn Write>) -> IoResult<()> {
+    pub fn send(&self, mut stream: impl Write) -> IoResult<()> {
         let Response { status_code, .. } = self;
         let body = match &self.body {
             Some(body) => body,

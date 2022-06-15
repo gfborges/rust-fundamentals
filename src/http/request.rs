@@ -1,12 +1,13 @@
 use std::{fmt::{Formatter, Display, Result as FmtResult}, str::Utf8Error};
 
 use std::str;
-use super::{Method, method::MethodError};
+use super::{Method, method::MethodError, QueryString};
 
+#[derive(Debug)]
 pub struct Request<'buffer> {
     path: &'buffer str,
     // express absense of value without null (typesafe)
-    query_string: Option<&'buffer str>,
+    pub query_string: Option<QueryString<'buffer>>,
     method: Method
 }
 
@@ -18,9 +19,7 @@ impl<'buffer> Request<'buffer> {
     pub fn method(&self) -> &Method {
         &self.method
     }
-    pub fn query_string(&'buffer self) -> Option<&'buffer str> {
-        self.query_string
-    }
+
 }
 
 impl<'buffer> TryFrom<&'buffer [u8]> for Request<'buffer> {
@@ -31,17 +30,16 @@ impl<'buffer> TryFrom<&'buffer [u8]> for Request<'buffer> {
 
         let (method,request) = get_next_word(request).ok_or(ParseError::InvalidRequest)?;
         let (mut path, request) = get_next_word(request).ok_or(ParseError::InvalidRequest)?;
+        
         let (protocol, _) = get_next_word(request).ok_or(ParseError::InvalidRequest)?;
-
-        if protocol == "HTTP 1.1" {
+        if protocol != "HTTP/1.1" {
             return Err(ParseError::InvalidProtocol);
         }
 
         let method :Method = method.parse()?;
-
-        let mut query_string: Option<&str> = None;
+        let mut query_string: Option<QueryString> = None;
         if let Some(i) = path.find('?') {
-            query_string = Some(&path[i+1..]);
+            query_string = Some(QueryString::from(&path[i+1..]));
             path = &path[..i];
         }
         Ok(Self {

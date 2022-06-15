@@ -1,6 +1,7 @@
 use std::{str::FromStr, fmt::Display};
 use std::fmt::{Result as FmtResult, Formatter};
 
+#[derive(Debug)]
 pub enum Method {
     Get,
     Delete,

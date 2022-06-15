@@ -23,7 +23,17 @@ impl Server {
                     match stream.read(&mut buffer) {
                         Ok(_) => {
                             match Request::try_from(&buffer[..]) {
-                                Ok(request) => println!("{} {} {:?}", request.method(), request.path(), request.query_string()),
+                                Ok(request) => {
+                                    println!("{:?}", request);
+                                    println!("{} {} {:?}",
+                                        request.method(),
+                                        request.path(),
+                                        request.query_string
+                                    );
+                                    if let Some(query_string) = request.query_string  {
+                                        println!("{:?}", query_string.get("arg1"));
+                                    } 
+                                },
                                 Err(err) => println!("Invalid Request: {err}")
                             }
                         },

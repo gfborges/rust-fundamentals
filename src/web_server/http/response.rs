@@ -27,6 +27,7 @@ impl Display for StatusCode {
     }
 }
 
+#[derive(Debug)]
 pub struct Response {
     status_code: StatusCode,
     body: Option<String>,
@@ -35,7 +36,7 @@ pub struct Response {
 impl Response {
     pub fn new(status_code: StatusCode, body: Option<String>) -> Self {
         Self {
-            status_code: StatusCode::Ok,
+            status_code,
             body,
         }
     }

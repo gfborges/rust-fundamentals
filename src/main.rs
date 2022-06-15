@@ -1,13 +1,10 @@
 #![allow(dead_code)]
-#![allow(unused_variables)]
 
-use server::Server;
-use website_handler::WebsiteHandler;
-mod http;
+use web_server::{server::Server, website_handler::WebsiteHandler};
+
 mod restaurant;
-mod server;
 mod threaded_talk;
-mod website_handler;
+mod web_server;
 
 fn main() {
     let server = Server::new("127.0.0.1:8000".to_string());

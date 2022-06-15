@@ -1,4 +1,4 @@
-use crate::http::{Request, Response, StatusCode, ParseError};
+use super::http::{Request, Response, StatusCode, ParseError};
 use std::{io::Read, net::TcpListener};
 
 pub trait Handler {
@@ -36,6 +36,7 @@ impl Server {
                                 }
                                 Err(e) => handler.handle_bad_request(&e)
                             };
+                            dbg!(&response);
                             if let Err(e) = response.send(Box::new(stream)) {
                                 print!("Failed to write reponse on stream: {e}");
                             }

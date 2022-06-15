@@ -31,7 +31,7 @@ impl<'buffer> From<&'buffer str> for QueryString<'buffer> {
             data.entry(key)
                 .and_modify(|curr: &mut Value| match curr {
                     Value::Single(prev) => *curr = Value::Multiple(vec![prev, value]),
-                    Value::Multiple(prev) => prev.push(value)
+                    Value::Multiple(prev) => prev.push(value),
                 })
                 .or_insert(Value::Single(value));
         }

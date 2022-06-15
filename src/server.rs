@@ -1,4 +1,4 @@
-use crate::http::Request;
+use crate::http::{Request, Response, StatusCode};
 use std::{io::Read, net::TcpListener};
 
 pub struct Server {
@@ -19,31 +19,26 @@ impl Server {
                 Ok((mut stream, addr)) => {
                     println!("OK {}", addr);
                     let mut buffer = [0u8; 2048];
-
                     match stream.read(&mut buffer) {
-                        Ok(_) => match Request::try_from(&buffer[..]) {
-                            Ok(request) => {
-                                println!("{:?}", request);
-                                println!(
-                                    "{} {} {:?}",
-                                    request.method(),
-                                    request.path(),
-                                    request.query_string
-                                );
-                                if let Some(query_string) = request.query_string {
-                                    println!("{:?}", query_string.get("arg1"));
+                        Ok(_) => {
+                            let response = match Request::try_from(&buffer[..]) {
+                                Ok(request) => {
+                                    dbg!(request);
+                                    Response::new(StatusCode::Ok)
                                 }
+                                Err(_) => Response::new(StatusCode::BadRequest),
+                            };
+                            if let Err(e) = response.send(Box::new(stream)) {
+                                print!("Failed to write reponse on stream: {e}");
                             }
-                            Err(err) => println!("Invalid Request: {err}"),
-                        },
+                        }
                         Err(e) => {
-                            println!("Falied to read from connection: {e}");
-                            continue;
+                            println!("Failed to read from stream: {e}")
                         }
                     }
                 }
                 Err(e) => {
-                    println!("ERROR: {e}");
+                    println!("Failed to connect: {e}");
                     continue;
                 }
             };

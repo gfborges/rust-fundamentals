@@ -10,7 +10,7 @@ use std::str;
 pub struct Request<'buffer> {
     path: &'buffer str,
     // express absense of value without null (typesafe)
-    pub query_string: Option<QueryString<'buffer>>,
+    query_string: Option<QueryString<'buffer>>,
     method: Method,
 }
 
@@ -21,6 +21,10 @@ impl<'buffer> Request<'buffer> {
 
     pub fn method(&self) -> &Method {
         &self.method
+    }
+
+    pub fn query_string(&self) -> Option<&QueryString> {
+        self.query_string.as_ref()
     }
 }
 

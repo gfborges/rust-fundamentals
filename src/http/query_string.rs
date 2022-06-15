@@ -8,15 +8,14 @@ pub struct QueryString<'buffer> {
 #[derive(Debug)]
 pub enum Value<'buffer> {
     Single(&'buffer str),
-    Multiple(Vec<&'buffer str>)
+    Multiple(Vec<&'buffer str>),
 }
 
 impl<'buffer> QueryString<'buffer> {
     pub fn get(&self, key: &str) -> Option<&Value> {
         self.data.get(key)
-    }   
+    }
 }
-
 
 impl<'buffer> From<&'buffer str> for QueryString<'buffer> {
     fn from(query_string: &'buffer str) -> Self {
@@ -27,21 +26,16 @@ impl<'buffer> From<&'buffer str> for QueryString<'buffer> {
 
             if let Some(i) = pair.find('=') {
                 key = &pair[..i];
-                value = &pair[i+1..];
+                value = &pair[i + 1..];
             }
-            data
-                .entry(key)
-                .and_modify(|curr: &mut Value|
-                    match curr {
-                        Value::Single(prev ) => {
-                            *curr = Value::Multiple(vec![prev, value])
-                        },
-                        Value::Multiple(prev) => {prev.push(value);}
-                    })
+            data.entry(key)
+                .and_modify(|curr: &mut Value| match curr {
+                    Value::Single(prev) => *curr = Value::Multiple(vec![prev, value]),
+                    Value::Multiple(prev) => prev.push(value)
+                })
                 .or_insert(Value::Single(value));
         }
 
         Self { data }
-    
     }
 }

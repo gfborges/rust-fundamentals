@@ -1,14 +1,17 @@
-use std::{fmt::{Formatter, Display, Result as FmtResult}, str::Utf8Error};
+use std::{
+    fmt::{Display, Formatter, Result as FmtResult},
+    str::Utf8Error,
+};
 
+use super::{method::MethodError, Method, QueryString};
 use std::str;
-use super::{Method, method::MethodError, QueryString};
 
 #[derive(Debug)]
 pub struct Request<'buffer> {
     path: &'buffer str,
     // express absense of value without null (typesafe)
     pub query_string: Option<QueryString<'buffer>>,
-    method: Method
+    method: Method,
 }
 
 impl<'buffer> Request<'buffer> {
@@ -19,27 +22,26 @@ impl<'buffer> Request<'buffer> {
     pub fn method(&self) -> &Method {
         &self.method
     }
-
 }
 
 impl<'buffer> TryFrom<&'buffer [u8]> for Request<'buffer> {
     type Error = ParseError;
 
     fn try_from(buffer: &'buffer [u8]) -> Result<Self, Self::Error> {
-        let request  = str::from_utf8(buffer)?;
+        let request = str::from_utf8(buffer)?;
 
-        let (method,request) = get_next_word(request).ok_or(ParseError::InvalidRequest)?;
+        let (method, request) = get_next_word(request).ok_or(ParseError::InvalidRequest)?;
         let (mut path, request) = get_next_word(request).ok_or(ParseError::InvalidRequest)?;
-        
+
         let (protocol, _) = get_next_word(request).ok_or(ParseError::InvalidRequest)?;
         if protocol != "HTTP/1.1" {
             return Err(ParseError::InvalidProtocol);
         }
 
-        let method :Method = method.parse()?;
+        let method: Method = method.parse()?;
         let mut query_string: Option<QueryString> = None;
         if let Some(i) = path.find('?') {
-            query_string = Some(QueryString::from(&path[i+1..]));
+            query_string = Some(QueryString::from(&path[i + 1..]));
             path = &path[..i];
         }
         Ok(Self {
@@ -53,8 +55,8 @@ impl<'buffer> TryFrom<&'buffer [u8]> for Request<'buffer> {
 fn get_next_word(request: &str) -> Option<(&str, &str)> {
     for (i, c) in request.chars().enumerate() {
         if c == ' ' || c == '\r' {
-            return Some((&request[..i], &request[i+1..]))
-        } 
+            return Some((&request[..i], &request[i + 1..]));
+        }
     }
     None
 }

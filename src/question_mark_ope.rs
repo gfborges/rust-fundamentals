@@ -13,5 +13,4 @@ fn read_file(file_name: &str) -> Result<String, io::Error> {
     let mut s = String::new();
     file.read_to_string(&mut s)?;
     Ok(s)
-
 }

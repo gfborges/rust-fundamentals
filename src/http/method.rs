@@ -1,5 +1,5 @@
-use std::{str::FromStr, fmt::Display};
-use std::fmt::{Result as FmtResult, Formatter};
+use std::fmt::{Formatter, Result as FmtResult};
+use std::{fmt::Display, str::FromStr};
 
 #[derive(Debug)]
 pub enum Method {
@@ -11,9 +11,8 @@ pub enum Method {
     Patch,
     Connect,
     Options,
-    Trace
+    Trace,
 }
-
 
 impl FromStr for Method {
     type Err = MethodError;
@@ -29,7 +28,7 @@ impl FromStr for Method {
             "CONNECT" => Ok(Method::Connect),
             "OPTIONS" => Ok(Method::Options),
             "TRACE" => Ok(Method::Trace),
-            _ => Err(MethodError)
+            _ => Err(MethodError),
         }
     }
 }
@@ -46,8 +45,7 @@ impl Display for Method {
             Method::Connect => write!(f, "{}", "CONNECT"),
             Method::Options => write!(f, "{}", "OPTIONS"),
             Method::Trace => write!(f, "{}", "TRACE"),
-        }  
-        
+        }
     }
 }
 

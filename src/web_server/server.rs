@@ -1,4 +1,4 @@
-use super::http::{Request, Response, StatusCode, ParseError};
+use super::http::{ParseError, Request, Response, StatusCode};
 use std::{io::Read, net::TcpListener};
 
 pub trait Handler {
@@ -15,7 +15,7 @@ pub struct Server {
 
 impl Server {
     pub fn new(addr: String) -> Self {
-        Server { addr }
+        Self { addr }
     }
 
     pub fn run(self, handler: impl Handler) {
@@ -34,7 +34,7 @@ impl Server {
                                     dbg!(&request);
                                     handler.handle_request(&request)
                                 }
-                                Err(e) => handler.handle_bad_request(&e)
+                                Err(e) => handler.handle_bad_request(&e),
                             };
                             dbg!(&response);
                             if let Err(e) = response.send(Box::new(stream)) {

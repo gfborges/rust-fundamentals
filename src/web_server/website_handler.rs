@@ -1,5 +1,4 @@
-use std::env;
-use std::fs::read_to_string;
+use std::{env, fs};
 
 use super::http::{Method, Request, Response, StatusCode};
 use super::server::Handler;
@@ -19,18 +18,31 @@ impl WebsiteHandler {
         &self.public_path
     }
 
-    fn read_file(&self, path: &str) -> Option<String> {
-        let path = format!("{}/{}", self.public_path, path);
-        read_to_string(path).ok()
+    fn read_file(&self, file_path: &str) -> Option<String> {
+        let path = format!("{}/{}", self.public_path, file_path);
+        match fs::canonicalize(path) {
+            Ok(path) => {
+                if path.starts_with(&self.public_path) {
+                    fs::read_to_string(path).ok()
+                } else {
+                    println!("Diretory Traversal Attack : {}", file_path);
+                    None
+                }
+            }
+            Err(_) => None,
+        }
     }
 
     fn route_handler(&self, request: &Request) -> Response {
-        if let Some(body) = self.read_file(request.path()) {
-            Response::new(StatusCode::Ok, Some(body))
-        } else if request.path() == "/" {
-            Response::new(StatusCode::Ok, self.read_file("index.html"))
-        } else{
-            Response::new(StatusCode::NotFound, None)
+        match request.path() {
+            "/" => Response::new(StatusCode::Ok, self.read_file("index.html")),
+            _ => {
+                if let Some(body) = self.read_file(request.path()) {
+                    Response::new(StatusCode::Ok, Some(body))
+                } else {
+                    Response::new(StatusCode::NotFound, None)
+                }
+            }
         }
     }
 }

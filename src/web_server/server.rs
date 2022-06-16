@@ -20,7 +20,7 @@ impl Server {
 
     pub fn run(self, handler: impl Handler) {
         println!("listing on {}", self.addr);
-        let listener = TcpListener::bind(&self.addr).unwrap();
+        let listener = TcpListener::bind(&self.addr).expect("port already in use");
 
         loop {
             match listener.accept() {
@@ -36,7 +36,6 @@ impl Server {
                                 }
                                 Err(e) => handler.handle_bad_request(&e),
                             };
-                            dbg!(&response);
                             if let Err(e) = response.send(Box::new(stream)) {
                                 print!("Failed to write reponse on stream: {e}");
                             }

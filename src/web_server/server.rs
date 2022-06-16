@@ -22,20 +22,13 @@ impl Server {
         println!("listing on {}", self.addr);
         let listener = TcpListener::bind(&self.addr).expect("port already in use");
 
-        loop {
-            match listener.accept() {
-                Ok((mut stream, addr)) => {
-                    println!("OK {}", addr);
+        for stream in listener.incoming() {
+            match stream {
+                Ok(mut stream) => {
                     let mut buffer = [0u8; 2048];
                     match stream.read(&mut buffer) {
                         Ok(_) => {
-                            let response = match Request::try_from(&buffer[..]) {
-                                Ok(request) => {
-                                    dbg!(&request);
-                                    handler.handle_request(&request)
-                                }
-                                Err(e) => handler.handle_bad_request(&e),
-                            };
+                            let response = self.try_parse_request(&buffer[..], &handler);
                             if let Err(e) = response.send(Box::new(stream)) {
                                 print!("Failed to write reponse on stream: {e}");
                             }
@@ -46,10 +39,20 @@ impl Server {
                     }
                 }
                 Err(e) => {
-                    println!("Failed to connect: {e}");
+                    println!("Failed to connect: {}", e);
                     continue;
                 }
-            };
+            }
+        }
+    }
+
+    fn try_parse_request(&self, buffer: &[u8], handler: &impl Handler) -> Response {
+        match Request::try_from(&buffer[..]) {
+            Ok(request) => {
+                dbg!(&request);
+                handler.handle_request(&request)
+            }
+            Err(e) => handler.handle_bad_request(&e),
         }
     }
 }
